@@ -1,5 +1,6 @@
 require 'test/unit'
 require 'rubygems'
+require 'shoulda'
 require 'flexmock/test_unit'
 require 'mocha'
 

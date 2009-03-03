@@ -8,52 +8,57 @@ class TestFacebooker < Test::Unit::TestCase
     ENV["FACEBOOK_API_KEY"] = @api_key
     ENV["FACEBOOK_SECRET_KEY"] = @secret_key
     @session = Facebooker::Session.create(@api_key, @secret_key)
-    @desktop_session = Facebooker::Session::Desktop.create(@api_key, @secret_key)
     @service = Facebooker::Service.new('http://apibase.com', '/api/path', @api_key)
-    @desktop_session.instance_variable_set("@service", @service)
   end
   
   def test_session_must_be_created_from_api_key_and_secret_key
     assert_kind_of(Facebooker::Session, @session)
   end
   
-  def test_session_can_tell_you_its_login_url
-    assert_not_nil(@session.login_url)
-    assert_equal("http://www.facebook.com/login.php?api_key=#{@api_key}&v=1.0", @session.login_url)
+  should "know the login url" do
+    assert_not_nil @session.login_url
+    assert_equal "http://www.facebook.com/login.php?api_key=#{@api_key}&v=1.0", @session.login_url
   end
   
-  def test_desktop_session_returns_auth_toke_as_part_of_login_url
-    @service = flexmock(@service).should_receive(:post).at_least.once.and_return(123)
-    assert_kind_of(Facebooker::Session::Desktop, @desktop_session)
-    assert_match(/auth_token=[a-z0-9A-Z]/, @desktop_session.login_url)
+  context Facebooker::Session::Desktop do
+    setup do
+      @session = Facebooker::Session::Desktop.create(@api_key, @secret_key)
+      @session.instance_variable_set("@service", @service)
+    end
+    
+    should "include auth token in login url" do
+      @service = flexmock(@service).should_receive(:post).at_least.once.and_return(123)
+      assert_match(/auth_token=[a-z0-9A-Z]/, @session.login_url)
+    end
+
+    should "post data to http location" do
+      flexmock(Net::HTTP).should_receive(:post_form).and_return(example_auth_token_xml)
+      assert_equal "http://www.facebook.com/login.php?api_key=#{@api_key}&v=1.0&auth_token=3e4a22bb2f5ed75114b0fc9995ea85f1", @session.login_url
+    end
+    
+    should "be secured and activated after receiving auth token and logging in" do
+      establish_session(@session)
+      assert_equal("5f34e11bfb97c762e439e6a5-8055", @session.instance_variable_get("@session_key"))
+    end
+    
+    should "use secret api key for hashing until user authenticates" do
+      assert_equal(@secret_key, @session.secret_for_method('facebook.auth.createToken'))
+      establish_session(@session)
+      assert_equal("ohairoflamao12345", @session.secret_for_method('anyNonAuthMethodName'))
+    end
+
+    should "not be able to get or set profile fbml fo any user other than logged in user" do
+      mock_http = establish_session(@session)
+      mock_http.should_receive(:post_form).and_return(example_friends_xml).once.ordered(:posts)
+      assert_raises(Facebooker::NonSessionUser) {
+        @session.user.friends.first.profile_fbml
+      }
+      assert_raises(Facebooker::NonSessionUser) {
+        @session.user.friends.first.profile_fbml = "O rly"
+      }
+    end
   end
-
-  def test_service_posts_data_to_http_location
-    flexmock(Net::HTTP).should_receive(:post_form).and_return(example_auth_token_xml)
-    assert_equal("http://www.facebook.com/login.php?api_key=#{@api_key}&v=1.0&auth_token=3e4a22bb2f5ed75114b0fc9995ea85f1", @desktop_session.login_url)
-  end
-
-  # def test_serivce_post_file_delegates_to_post_multipart_form
-  #   # flexmock(@service).should_receive(:url).and_return('url')
-  #   # flexmock(Net::HTTP).expects(:post_multipart_form).with('url', {:method => 'facebook.auth.createToken'}).returns(example_auth_token_xml)
-  #   
-  #   res = mock(:content_type => 'text/html', :code => '200', :body => '<html><body>my blog</body></html>')
-  #   Net::HTTP.stubs(:get_response).once.with(uri).returns res
-  #   
-  #   @service.post_file(:method => 'facebook.auth.createToken')
-  # end
-
-  def test_desktop_session_be_secured_and_activated_after_receiving_auth_token_and_logging_in
-    establish_session
-    assert_equal("5f34e11bfb97c762e439e6a5-8055", @session.instance_variable_get("@session_key"))
-  end
-
-  def test_desktop_session_uses_secret_api_key_for_hashing_until_user_authenticates
-    assert_equal(@secret_key, @desktop_session.secret_for_method('facebook.auth.createToken'))
-    establish_session(@desktop_session)
-    assert_equal("ohairoflamao12345", @desktop_session.secret_for_method('anyNonAuthMethodName'))
-  end
-
+  
   def test_session_can_get_current_logged_in_user_id_and_will_cache
     establish_session
     flexmock(Net::HTTP).should_receive(:post_form).and_return(example_get_logged_in_user_xml)
@@ -346,17 +351,6 @@ class TestFacebooker < Test::Unit::TestCase
   def test_users_set_status_false
     expect_http_posts_with_responses(example_users_set_status_false_xml)
     assert_equal false, @session.post('facebook.users.setStatus', :uid => 123, :status => 'message')
-  end
-
-  def test_desktop_apps_cannot_request_to_get_or_set_profile_fbml_for_any_user_other_than_logged_in_user
-    mock_http = establish_session(@desktop_session)
-    mock_http.should_receive(:post_form).and_return(example_friends_xml).once.ordered(:posts)
-    assert_raises(Facebooker::NonSessionUser) {
-      @desktop_session.user.friends.first.profile_fbml
-    }
-    assert_raises(Facebooker::NonSessionUser) {
-      @desktop_session.user.friends.first.profile_fbml = "O rly"
-    }
   end
   
   private
