@@ -3,7 +3,6 @@ require 'active_support'
 
 class Facebooker::SessionTest < Test::Unit::TestCase
 
-
   def setup
     ENV['FACEBOOK_API_KEY'] = '1234567'
     ENV['FACEBOOK_SECRET_KEY'] = '7654321'   
@@ -22,35 +21,56 @@ class Facebooker::SessionTest < Test::Unit::TestCase
     assert_equal("http://www.facebook.com/install.php?api_key=1234567&v=1.0&next=next_url%3Fa%3D1%26b%3D2", session.install_url(:next => "next_url?a=1&b=2"))
   end
   
-  def test_can_get_api_and_secret_key_from_environment
-    assert_equal('1234567', Facebooker::Session.api_key)
-    assert_equal('7654321', Facebooker::Session.secret_key)    
+  context Facebooker::Session do
+    should "get api from environment" do
+      ENV['FACEBOOK_API_KEY'] = '90909'
+      assert_equal '90909', Facebooker::Session.api_key
+    end
+    
+    should "get secret key from environment" do
+      ENV['FACEBOOK_SECRET_KEY'] = '4321'
+      assert_equal('4321', Facebooker::Session.secret_key)    
+    end
+    
+    context "not defined in environment" do
+      setup do
+        ENV['FACEBOOK_API_KEY'], ENV['FACEBOOK_SECRET_KEY'] = nil
+      end
+    
+      should "get api key from file" do
+        flexmock(File).should_receive(:read).with(File.expand_path("~/.facebookerrc")).
+          once.and_return('{:api => "foo"}')
+        assert_equal 'foo', Facebooker::Session.api_key
+      end
+
+      should "get secret key from file" do
+        flexmock(File).should_receive(:read).with(File.expand_path("~/.facebookerrc")).
+          once.and_return('{:secret => "bar"}')
+        assert_equal('bar', Facebooker::Session.secret_key)
+      end
+    end
+    
+    should "raise an exception if configuration is not defined in the environment or a file" do
+      ENV['FACEBOOK_API_KEY'], ENV['FACEBOOK_SECRET_KEY'] = nil
+      flexmock(File).should_receive(:read).with(File.expand_path("~/.facebookerrc")).
+        once.and_return {raise Errno::ENOENT, "No such file"}
+      assert_raises(Facebooker::Session::ConfigurationMissing) do
+        Facebooker::Session.api_key
+      end
+    end
+    
   end
   
-  def test_if_keys_are_not_available_via_environment_then_they_are_gotten_from_a_file
-    ENV['FACEBOOK_API_KEY'], ENV['FACEBOOK_SECRET_KEY'] = nil
-    flexmock(File).should_receive(:read).with(File.expand_path("~/.facebookerrc")).once.and_return('{:api => "foo"}')
-    assert_equal('foo', Facebooker::Session.api_key)
-  end
+  context "marshal" do
+    should "store api key" do
+      loaded_session = Marshal.load(Marshal.dump(@session))
+      assert_equal 'whatever', loaded_session.instance_variable_get("@api_key")
+    end
   
-  def test_if_environment_and_file_fail_to_match_then_an_exception_is_raised
-    ENV['FACEBOOK_API_KEY'], ENV['FACEBOOK_SECRET_KEY'] = nil
-    flexmock(File).should_receive(:read).with(File.expand_path("~/.facebookerrc")).once.and_return {raise Errno::ENOENT, "No such file"}
-    assert_raises(Facebooker::Session::ConfigurationMissing) {
-      Facebooker::Session.api_key
-    }
-  end
-  
-  def test_marshal_stores_api_key
-    data = Marshal.dump(@session)
-    loaded_session = Marshal.load(data)
-    assert_equal 'whatever', loaded_session.instance_variable_get("@api_key")
-  end
-  
-  def test_marshal_stores_secret_key
-    data = Marshal.dump(@session)
-    loaded_session = Marshal.load(data)
-    assert_equal 'doesnotmatterintest', loaded_session.instance_variable_get("@secret_key")    
+    should "store secret key" do
+      loaded_session = Marshal.load(Marshal.dump(@session))
+      assert_equal 'doesnotmatterintest', loaded_session.instance_variable_get("@secret_key")    
+    end
   end
   
   def test_configuration_file_path_can_be_set_explicitly
