@@ -149,7 +149,7 @@ class UrlRecognitionTests < Test::Unit::TestCase
   end
 end
 
-class RailsIntegrationTestForFBConnect < Test::Unit::TestCase
+class RailsIntegrationTestForFBConnect < ActionController::TestCase
   include FBConnectTestHelpers
   
   def setup
@@ -172,7 +172,7 @@ class RailsIntegrationTestForFBConnect < Test::Unit::TestCase
   end
 end
 
-class RailsIntegrationTestForNonFacebookControllers < Test::Unit::TestCase
+class RailsIntegrationTestForNonFacebookControllers < ActionController::TestCase
   def setup
     ENV['FACEBOOK_CANVAS_PATH'] ='facebook_app_name'
     ENV['FACEBOOK_API_KEY'] = '1234567'
@@ -207,7 +207,7 @@ class RailsIntegrationTestForNonFacebookControllers < Test::Unit::TestCase
   
 end
   
-class RailsIntegrationTestForExtendedPermissions < Test::Unit::TestCase
+class RailsIntegrationTestForExtendedPermissions < ActionController::TestCase
   def setup
     ENV['FACEBOOK_API_KEY'] = '1234567'
     ENV['FACEBOOK_SECRET_KEY'] = '7654321'
@@ -246,7 +246,7 @@ class RailsIntegrationTestForExtendedPermissions < Test::Unit::TestCase
   end
 end  
   
-class RailsIntegrationTestForApplicationInstallation < Test::Unit::TestCase
+class RailsIntegrationTestForApplicationInstallation < ActionController::TestCase
   def setup
     ENV['FACEBOOK_API_KEY'] = '1234567'
     ENV['FACEBOOK_SECRET_KEY'] = '7654321'
@@ -275,7 +275,7 @@ class RailsIntegrationTestForApplicationInstallation < Test::Unit::TestCase
   end
 end
   
-class RailsIntegrationTest < Test::Unit::TestCase
+class RailsIntegrationTest < ActionController::TestCase
   include FBConnectTestHelpers
   def setup
     ENV['FACEBOOK_CANVAS_PATH'] ='root'
@@ -496,7 +496,7 @@ class RailsIntegrationTest < Test::Unit::TestCase
 end
 
 
-class RailsSignatureTest < Test::Unit::TestCase
+class RailsSignatureTest < ActionController::TestCase
   def setup
     ENV['FACEBOOKER_RELATIVE_URL_ROOT'] ='root'
     ENV['FACEBOOK_API_KEY'] = '1234567'
@@ -1094,7 +1094,7 @@ class RailsFacebookFormbuilderTest < Test::Unit::TestCase
 
 end
 
-class RailsPrettyErrorsTest < Test::Unit::TestCase
+class RailsPrettyErrorsTest < ActionController::TestCase
   class ControllerWhichFails < ActionController::Base
     def pass
       render :text=>''
@@ -1134,7 +1134,7 @@ class RailsPrettyErrorsTest < Test::Unit::TestCase
   end
 end
 
-class RailsUrlHelperExtensionsTest < Test::Unit::TestCase
+class RailsUrlHelperExtensionsTest < ActionController::TestCase
   class UrlHelperExtensionsClass
     include ActionView::Helpers::UrlHelper
     include ActionView::Helpers::TagHelper
@@ -1276,7 +1276,7 @@ class RailsUrlHelperExtensionsTest < Test::Unit::TestCase
   
 end
 
-class RailsRequestFormatTest < Test::Unit::TestCase
+class RailsRequestFormatTest < ActionController::TestCase
   class FacebookController < NoisyController
     def index
       respond_to do |format|
