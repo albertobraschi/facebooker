@@ -19,8 +19,6 @@ end
 require 'zlib'
 require 'digest/md5'
 
-
-
 module Facebooker
       
     class << self
@@ -44,7 +42,22 @@ module Facebooker
           ActionController::Base.asset_host = facebooker['callback_url'] if(ActionController::Base.asset_host.blank?)  && Facebooker.set_asset_host_to_callback_url
         end
         @facebooker_configuration = facebooker
+        
+        begin
+          require 'facebooker/service/curl'
+          self.service = Service::Curl.new(api_server_base, api_rest_path, api_key)
+        rescue LoadError
+          $stderr.puts "Curb not found. Using Net::HTTP."
+        end
       end
+    end
+    
+    def service
+      @service ||= Service::Standard.new(api_server_base, api_rest_path, api_key)
+    end
+    
+    def service=(service)
+      @service = service
     end
     
     def facebooker_config
@@ -82,14 +95,6 @@ module Facebooker
     
     def set_asset_host_to_callback_url
       @set_asset_host_to_callback_url.nil? ? true : @set_asset_host_to_callback_url
-    end
-    
-    def use_curl=(val)
-      @use_curl=val
-    end
-    
-    def use_curl?
-      @use_curl
     end
     
     def timeout=(val)
@@ -143,7 +148,7 @@ require 'facebooker/feed'
 require 'facebooker/logging'
 require 'facebooker/model'
 require 'facebooker/parser'
-require 'facebooker/service'
+require 'facebooker/service/standard'
 require 'facebooker/server_cache'
 require 'facebooker/data'
 require 'facebooker/admin'

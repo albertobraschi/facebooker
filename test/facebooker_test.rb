@@ -9,8 +9,8 @@ class TestFacebooker < Test::Unit::TestCase
     ENV["FACEBOOK_SECRET_KEY"] = @secret_key
     @session = Facebooker::Session.create(@api_key, @secret_key)
     @desktop_session = Facebooker::Session::Desktop.create(@api_key, @secret_key)
-    @service = Facebooker::Service.new('http://apibase.com', '/api/path', @api_key)
-    @desktop_session.instance_variable_set("@service", @service)
+    @service = Facebooker::Service::Standard.new('http://apibase.com', '/api/path', @api_key)
+    Facebooker.service = @service
   end
   
   def test_session_must_be_created_from_api_key_and_secret_key

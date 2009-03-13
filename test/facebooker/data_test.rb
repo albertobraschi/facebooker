@@ -3,8 +3,6 @@ require File.expand_path(File.dirname(__FILE__) + '/../test_helper')
 class Facebooker::DataTest < Test::Unit::TestCase
   def setup
     @session = Facebooker::Session.create('apikey', 'secretkey')
-    #make sure we use net::http since that's what the tests expect
-    Facebooker.use_curl=false
   end
   
   def test_can_ask_facebook_to_set_a_cookies

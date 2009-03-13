@@ -556,7 +556,7 @@ module Facebooker
       end
       
       def service
-        @service ||= Service.new(Facebooker.api_server_base, Facebooker.api_rest_path, @api_key)      
+        Facebooker.service
       end
       
       def uid

@@ -12,7 +12,7 @@ module Facebooker
     end
  
     def service
-      @service ||= MockService.new(Facebooker.api_server_base, Facebooker.api_rest_path, @api_key)
+      @service ||= Service::Mock.new
     end
   end
 end

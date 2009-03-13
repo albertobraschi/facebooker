@@ -4,7 +4,6 @@ class Facebooker::MobileTest < Test::Unit::TestCase
   def setup
     @session = Facebooker::Session.create('apikey', 'secretkey')
     @user = Facebooker::User.new(1234, @session)
-    Facebooker.use_curl=false
   end
   
   def test_can_send
