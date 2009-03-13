@@ -131,18 +131,18 @@ class Test::Unit::TestCase
   include Facebooker::Rails::TestHelpers
 end
 
-
 # you can't use asset_recognize, because it can't pass parameters in to the requests
 class UrlRecognitionTests < Test::Unit::TestCase
   def test_detects_in_canvas
-    request = ActionController::TestRequest.new({"fb_sig_in_canvas"=>"1"}, {}, nil)
+    request = ActionController::TestRequest.new
+    request.query_parameters[:fb_sig_in_canvas] = "1"
     request.path   = "/"
     ActionController::Routing::Routes.recognize(request)
     assert_equal({"controller"=>"facebook","action"=>"index"},request.path_parameters)
   end
   
   def test_routes_when_not_in_canvas
-    request = ActionController::TestRequest.new({}, {}, nil)
+    request = ActionController::TestRequest.new
     request.path   = "/"
     ActionController::Routing::Routes.recognize(request)
     assert_equal({"controller"=>"plain_old_rails","action"=>"index"},request.path_parameters)

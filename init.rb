@@ -42,7 +42,7 @@ end
 # and also in the post body. We want to ignore the query string ones because they are one
 # request out of date
 # We only do thise when there are POST parameters so that IFrame linkage still works
-class ActionController::AbstractRequest
+class ActionController::Request
   def query_parameters_with_facebooker
     if request_parameters.blank?
       query_parameters_without_facebooker
