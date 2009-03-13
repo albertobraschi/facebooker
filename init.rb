@@ -11,7 +11,6 @@ Facebooker.logger = RAILS_DEFAULT_LOGGER if Object.const_defined? :RAILS_DEFAULT
 require 'net/http_multipart_post'
 require 'facebooker/rails/controller'
 require 'facebooker/rails/facebook_url_rewriting'
-require 'facebooker/rails/facebook_session_handling'
 require 'facebooker/rails/routing'
 require 'facebooker/rails/facebook_pretty_errors' rescue nil
 require 'facebooker/rails/facebook_url_helper'
