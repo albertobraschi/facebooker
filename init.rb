@@ -14,6 +14,11 @@ require 'facebooker/rails/facebook_url_rewriting'
 require 'facebooker/rails/routing'
 require 'facebooker/rails/facebook_pretty_errors' rescue nil
 require 'facebooker/rails/facebook_url_helper'
+
+require 'rack/facebook'
+ActionController::Dispatcher.middleware.insert_after 'ActionController::Failsafe',
+  Rack::Facebook, Facebooker.secret_key
+
 module ::ActionController
   class Base
     def self.inherited_with_facebooker(subclass)
