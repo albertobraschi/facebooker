@@ -11,7 +11,9 @@ end
 
 module FBConnectTestHelpers
   def setup_fb_connect_cookies(params=cookie_hash_for_auth)
-    params.each {|k,v| @request.cookies[ENV['FACEBOOK_API_KEY']+k] = CGI::Cookie.new(ENV['FACEBOOK_API_KEY']+k,v)} 
+    params.each do |k,v|
+      @request.cookies[ENV['FACEBOOK_API_KEY']+k] = v
+    end 
   end
 
   def expired_cookie_hash_for_auth
