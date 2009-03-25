@@ -4,7 +4,7 @@ begin
   require 'multi_rails_init'
 rescue LoadError
   # multi rails not installed, test against newest supported version of Rails
-  gem 'rails', '2.2.2'
+  gem 'rails', '2.3.2'
 end
 require 'flexmock/test_unit'
 require 'mocha'
